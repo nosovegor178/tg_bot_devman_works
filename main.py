@@ -2,19 +2,7 @@ import os
 import requests
 from dotenv import load_dotenv
 import telegram
-import argparse
-
-
-load_dotenv()
-
-
-tg_token = os.environ['TG_BOT_TOKEN']
-bot = telegram.Bot(tg_token)
-url = 'https://dvmn.org/api/long_polling/'
-API_TOKEN = os.environ['DEVMAN_TOKEN']
-headers = {
-    'Authorization': API_TOKEN
-}
+from time import sleep
 
 
 def send_info_about_attempt(attempt, chat_id):
@@ -34,29 +22,31 @@ def looking_for_attempts(timestamp, url, headers):
     payload = {
         'timestamp': timestamp
     }
-    response = requests.get(url, headers=headers, params=payload, timeout=5)
+    response = requests.get(url, headers=headers, params=payload, timeout=90)
     response.raise_for_status()
     return response.json()
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        prog='devman_tg_bot',
-        description='''Send notifications about finishing of
-        checking in Devman site by Telegram bot''')
-    parser.add_argument('chat_id',
-                        help='Input your Telegram chat id here')
-    args = parser.parse_args()
-
+    load_dotenv()
+    TG_TOKEN = os.environ['TG_BOT_TOKEN']
+    bot = telegram.Bot(TG_TOKEN)
+    URL = 'https://dvmn.org/api/long_polling/'
+    API_TOKEN = os.environ['DEVMAN_TOKEN']
+    CHAT_ID = os.environ['CHAT_ID']
+    headers = {
+        'Authorization': API_TOKEN
+    }
     timestamp = None
     while True:
         try:
-            response = looking_for_attempts(timestamp, url, headers)
+            response = looking_for_attempts(timestamp, URL, headers)
             timestamp = response['last_attempt_timestamp']
             attempts = response['new_attempts']
             for attempt in attempts:
-                send_info_about_attempt(attempt, args.chat_id)
+                send_info_about_attempt(attempt, CHAT_ID)
         except requests.exceptions.ReadTimeout:
-            print('Работ нет')
+            pass
         except requests.exceptions.ConnectionError:
             print('Соединение прервано')
+            sleep(10)
