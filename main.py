@@ -18,33 +18,33 @@ def send_info_about_attempt(attempt, chat_id):
 Работа принята, можно продолжать!''')
 
 
-def looking_for_attempts(timestamp, url, headers):
+def looking_for_attempts(timestamp, headers):
     payload = {
         'timestamp': timestamp
     }
-    response = requests.get(url, headers=headers, params=payload, timeout=90)
+    response = requests.get(devman_api_url, headers=headers, params=payload, timeout=90)
     response.raise_for_status()
     return response.json()
 
 
 if __name__ == '__main__':
     load_dotenv()
-    TG_TOKEN = os.environ['TG_BOT_TOKEN']
-    bot = telegram.Bot(TG_TOKEN)
-    URL = 'https://dvmn.org/api/long_polling/'
-    API_TOKEN = os.environ['DEVMAN_TOKEN']
-    CHAT_ID = os.environ['CHAT_ID']
+    tg_token = os.environ['TG_BOT_TOKEN']
+    bot = telegram.Bot(tg_token)
+    devman_api_url = 'https://dvmn.org/api/long_polling/'
+    api_token = os.environ['DEVMAN_TOKEN']
+    chat_id = os.environ['CHAT_ID']
     headers = {
-        'Authorization': API_TOKEN
+        'Authorization': api_token
     }
     timestamp = None
     while True:
         try:
-            response = looking_for_attempts(timestamp, URL, headers)
+            response = looking_for_attempts(timestamp, headers)
             timestamp = response['last_attempt_timestamp']
             attempts = response['new_attempts']
             for attempt in attempts:
-                send_info_about_attempt(attempt, CHAT_ID)
+                send_info_about_attempt(attempt, chat_id)
         except requests.exceptions.ReadTimeout:
             pass
         except requests.exceptions.ConnectionError:
