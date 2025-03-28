@@ -19,6 +19,7 @@ def send_info_about_attempt(attempt, chat_id):
 
 
 def looking_for_attempts(timestamp, headers):
+    devman_api_url = 'https://dvmn.org/api/long_polling/'
     payload = {
         'timestamp': timestamp
     }
@@ -31,7 +32,6 @@ if __name__ == '__main__':
     load_dotenv()
     tg_token = os.environ['TG_BOT_TOKEN']
     bot = telegram.Bot(tg_token)
-    devman_api_url = 'https://dvmn.org/api/long_polling/'
     api_token = os.environ['DEVMAN_TOKEN']
     chat_id = os.environ['CHAT_ID']
     headers = {
